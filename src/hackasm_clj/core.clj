@@ -16,7 +16,7 @@
       (s/replace #"//.*$" "")
       s/trim))
 
-(defn- first-pass [src]
+(defn first-pass [src]
   (->> src
        (map scrub)
        (filter not-empty)))
