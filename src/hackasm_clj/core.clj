@@ -35,7 +35,7 @@
 
     (format "111%s%s%s" comp dest jump)))
 
-(defn- parse-instruction [instruction]
+(defn parse-instruction [instruction]
   (if (s/starts-with? instruction "@")
     (parse-a instruction)
     (parse-c instruction)))
