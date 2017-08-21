@@ -16,7 +16,9 @@
       (s/replace #"//.*$" "")
       s/trim))
 
-(defn first-pass [src]
+(defn first-pass
+  "Accepts a HACK assembly program and removes all comments and white space."
+  [src]
   (->> src
        (map scrub)
        (filter not-empty)))
@@ -35,15 +37,22 @@
 
     (format "111%s%s%s" comp dest jump)))
 
-(defn parse-instruction [instruction]
+(defn parse-instruction
+  "Parses `instruction` into HACK machine language."
+  [instruction]
   (if (s/starts-with? instruction "@")
     (parse-a instruction)
     (parse-c instruction)))
+
+(defn assemble
+  "Translates the list of ASM instructions into HACK machine language."
+  [instructions]
+  (map parse-instruction instructions))
 
 (defn -main
   "Assembles the HACK assembly program 'src-file'."
   [src-file]
   (let [instructions (first-pass (load-src src-file))
-        machine-instructions (map parse-instruction instructions)]
+        machine-instructions (assemble instructions)]
 
     (write-results src-file machine-instructions)))

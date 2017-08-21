@@ -1,6 +1,7 @@
 (ns hackasm-clj.core-test
   (:require [clojure.test :refer :all]
-            [hackasm-clj.core :refer :all]))
+            [hackasm-clj.core :refer :all]
+            [hackasm-clj.example-code :as examples]))
 
 (deftest first-pass-scrubs-lines-test
   (testing "First pass will remove comments and trim white space"
@@ -33,3 +34,8 @@
   (testing "C-instructions `jump` fields are correctly parsed"
     (is (= "1110101010000111" (parse-instruction "0;JMP")))
     (is (= "1111110111010010" (parse-instruction "D=M+1;JEQ")))))
+
+(deftest assemble-test
+  (testing "Correctly assembles a whole program"
+    (is (= examples/add-hack (assemble examples/add-asm)))
+    (is (= examples/rect-hack (assemble examples/rect-asm)))))
