@@ -24,10 +24,28 @@
   Returns a vector with the cleaned up instructions as a vector and the symbol
   table."
   [src]
-  [(->> src
-        (map scrub)
-        (filter not-empty))
-   {}])
+  (loop [instructions src
+         scrubbed []
+         symbol-table {}]
+    (if (empty? instructions)
+      [scrubbed symbol-table]
+      (let [current (scrub (first instructions))
+            remaining (rest instructions)]
+        (cond
+          (s/starts-with? current "(")
+          (let [[_ label] (re-matches #"^\((.*)\)$" current)
+                index (count scrubbed)]
+            (recur remaining
+                   scrubbed
+                   (assoc symbol-table (keyword label) index)))
+          (not-empty current)
+          (recur remaining
+                 (conj scrubbed current)
+                 symbol-table)
+          :else
+          (recur remaining
+                 scrubbed
+                 symbol-table))))))
 
 (defn- to-binary [num-string]
   (pprint/cl-format nil "~16,'0b" (Integer/parseInt num-string)))

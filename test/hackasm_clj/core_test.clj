@@ -11,6 +11,19 @@
                                           "   @2"
                                           "   D=A // d=2"])))))
 
+(deftest first-pass-adds-labels-test
+  (testing "First pass will remove labels and add them to the symbol table"
+    (is (= [["@END" "0;JMP"]
+            {:END 0}]
+           (first-pass ["(END)"
+                        "   @END"
+                        "   0;JMP"])))
+    (is (= [examples/max-first-pass
+            {:OUTPUT_FIRST 10
+             :OUTPUT_D 12
+             :INFINITE_LOOP 14}]
+           (first-pass examples/max-asm)))))
+
 (deftest parse-instruction-a-instructions-test
   (testing "A-instructions are correctly parsed (No symbols)"
     (is (= "0000000000000010" (parse-instruction "@2")))
