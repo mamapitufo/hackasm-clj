@@ -17,11 +17,17 @@
       s/trim))
 
 (defn first-pass
-  "Accepts a HACK assembly program and removes all comments and white space."
+  "Accepts a HACK assembly program and removes all comments and white space. Maps
+  any labels it finds to the next instruction number and adds them to a symbol
+  table.
+
+  Returns a vector with the cleaned up instructions as a vector and the symbol
+  table."
   [src]
-  (->> src
-       (map scrub)
-       (filter not-empty)))
+  [(->> src
+        (map scrub)
+        (filter not-empty))
+   {}])
 
 (defn- to-binary [num-string]
   (pprint/cl-format nil "~16,'0b" (Integer/parseInt num-string)))
@@ -52,7 +58,7 @@
 (defn -main
   "Assembles the HACK assembly program 'src-file'."
   [src-file]
-  (let [instructions (first-pass (load-src src-file))
+  (let [[instructions symbol-table] (first-pass (load-src src-file))
         machine-instructions (assemble instructions)]
 
     (write-results src-file machine-instructions)))
