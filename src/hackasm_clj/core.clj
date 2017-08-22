@@ -62,16 +62,26 @@
     (format "111%s%s%s" comp dest jump)))
 
 (defn parse-instruction
-  "Parses `instruction` into HACK machine language."
-  [instruction]
+  "Parses `instruction` into HACK machine language. Returns a vector with the
+  translated instruction and the updated symbol table."
+  [instruction symbol-table]
   (if (s/starts-with? instruction "@")
-    (parse-a instruction)
-    (parse-c instruction)))
+    [(parse-a instruction) symbol-table]
+    [(parse-c instruction) symbol-table]))
 
 (defn assemble
-  "Translates the list of ASM instructions into HACK machine language."
-  [instructions]
-  (map parse-instruction instructions))
+  "Translates the list of ASM instructions into HACK machine language. Accepts
+  a pre-populated symbol table with the default symbols."
+  [instructions symbol-table]
+  (loop [src instructions
+         machine []
+         symbols symbol-table]
+    (if (empty? src)
+      machine
+      (let [[translated updated-symbols] (parse-instruction (first src) symbols)]
+        (recur (rest src)
+               (conj machine translated)
+               updated-symbols)))))
 
 (defn -main
   "Assembles the HACK assembly program 'src-file'."
