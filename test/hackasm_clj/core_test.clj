@@ -30,6 +30,22 @@
     (is (= "0111111111111111" (first (parse-instruction "@32767" {}))))
     (is (= "0000000000000000" (first (parse-instruction "@0" {}))))))
 
+(deftest parse-instruction-a-instructions-existing-symbol-test
+  (testing "A-instructions are correctly parsed when a symbol exists."
+    (is (= "0000000000010000"
+           (first (parse-instruction "@test" {:symbols {:test 16}}))))
+    (is (= "0000000000000101"
+           (first (parse-instruction "@END" {:symbols {:END 5 :test 16}}))))))
+
+(deftest parse-instruction-a-instruction-new-symbol-test
+  (testing "A-instructions are correctly parsed and symbol table is updated"
+    (is (= ["0000000000010000" {:symbols {:test 16}
+                                :next-var 17}]
+           (parse-instruction "@test" {:symbols {} :next-var 16})))
+    (is (= ["0000000000010001" {:symbols {:test 16 :another 17}
+                                :next-var 18}]
+           (parse-instruction "@another" {:symbols {:test 16} :next-var 17})))))
+
 (deftest parse-instruction-c-instructions-comp-test
   (testing "C-instructions `comp` fields are correctly parsed"
     (is (= "1110001100000000" (first (parse-instruction "D" {}))))

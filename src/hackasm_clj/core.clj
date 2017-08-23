@@ -51,8 +51,22 @@
   (pprint/cl-format nil "~16,'0b" (Integer/parseInt num-string)))
 
 (defn- parse-a [instruction symbol-table]
-  [(to-binary (subs instruction 1))
-   symbol-table])
+  (let [value (subs instruction 1)
+        symb (keyword value)]
+    (cond
+      (re-matches #"^\d.*" value)
+      [(to-binary value) symbol-table]
+
+      (contains? (:symbols symbol-table) symb)
+      (parse-a (format "@%s" (get-in symbol-table [:symbols symb]))
+               symbol-table)
+
+      :else
+      (let [address (:next-var symbol-table)
+            updated-st (-> symbol-table
+                           (assoc-in [:symbols symb] address)
+                           (assoc :next-var (inc address)))]
+        (parse-a (format "@%s" address) updated-st)))))
 
 (defn- parse-c [instruction]
   (let [parts (re-matches #"^(?:([^=]+)=)?([^;]+)(?:;(.*))?$" instruction)
@@ -76,18 +90,19 @@
   [instructions symbol-table]
   (loop [src instructions
          machine []
-         symbols symbol-table]
+         st symbol-table]
     (if (empty? src)
       machine
-      (let [[translated updated-symbols] (parse-instruction (first src) symbols)]
+      (let [[translated updated-st] (parse-instruction (first src) st)]
         (recur (rest src)
                (conj machine translated)
-               updated-symbols)))))
+               updated-st)))))
 
 (defn -main
   "Assembles the HACK assembly program 'src-file'."
   [src-file]
-  (let [[instructions symbol-table] (first-pass (load-src src-file))
-        machine-instructions (assemble instructions)]
+  (let [[instructions symbols] (first-pass (load-src src-file))
+        symbol-table {:symbols symbols :next-var 16}
+        machine-instructions (assemble instructions symbol-table)]
 
     (write-results src-file machine-instructions)))
