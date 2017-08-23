@@ -50,8 +50,9 @@
 (defn- to-binary [num-string]
   (pprint/cl-format nil "~16,'0b" (Integer/parseInt num-string)))
 
-(defn- parse-a [instruction]
-  (to-binary (subs instruction 1)))
+(defn- parse-a [instruction symbol-table]
+  [(to-binary (subs instruction 1))
+   symbol-table])
 
 (defn- parse-c [instruction]
   (let [parts (re-matches #"^(?:([^=]+)=)?([^;]+)(?:;(.*))?$" instruction)
@@ -66,7 +67,7 @@
   translated instruction and the updated symbol table."
   [instruction symbol-table]
   (if (s/starts-with? instruction "@")
-    [(parse-a instruction) symbol-table]
+    (parse-a instruction symbol-table)
     [(parse-c instruction) symbol-table]))
 
 (defn assemble
